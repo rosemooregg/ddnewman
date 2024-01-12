@@ -1,0 +1,26 @@
+{
+    "info": {
+        "name": "Data-Driven POC"
+    },
+    "variables": [
+        {"key": "url", "value": ""},
+        {"key": "method", "value": ""},
+        {"key": "body", "value": ""},
+        {"key": "statusCode", "value": ""}
+    ],
+    "item": [
+        {
+            "name": "{{TestName}}",
+            "request": {
+                "url": "{{url}}",
+                "method": "{{method}}",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{{body}}"
+                }
+            },
+            "response": []
+        }
+    ]
+}

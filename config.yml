@@ -1,0 +1,28 @@
+
+
+CircleCI Workflow (.circleci/config.yml):
+Set up a CircleCI workflow to run the Newman tests and generate an HTML report.
+
+version: 2.1
+
+jobs:
+  build:
+    docker:
+image: circleci/node:latest
+    steps:
+checkout
+run:
+          name: Install dependencies
+          command: npm install newman xlsx
+run:
+          name: Run Newman tests and generate HTML report
+          command: node run_tests.js
+store_artifacts:
+          path: reports
+          destination: reports
+
+workflows:
+  version: 2
+  build:
+    jobs:
+build

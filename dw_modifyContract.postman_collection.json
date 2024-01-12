@@ -1,0 +1,6024 @@
+{
+	"info": {
+		"_postman_id": "f7a9d5a3-acf6-459d-b84d-3dd30aca67b7",
+		"name": "DW Modify Contract Flow",
+		"description": "Learing how to set, get and assertions the values\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27372412"
+	},
+	"item": [
+		{
+			"name": "Login and Location ID",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonDate=pm.response.json();",
+									"pm.globals.set(\"global_authToken\", jsonDate.auth_token);",
+									"",
+									"pm.test(\"C3969 login status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Api-version",
+								"value": "4",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\":\"{{admin_email}}\",\"password\":\"{{admin_password}}\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Non MetricLocation",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let randomNo=Math.floor(Math.random() *100000000000000000+1);",
+									"let locationName=\"ZApiTest\"+randomNo;",
+									"pm.globals.set('locationName',locationName.toString());",
+									"pm.globals.set('locationCode',randomNo);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var Ajv = require('ajv');",
+									"var maxNumberOfTries = 3;",
+									"var sleepBetweenTries = 1000;",
+									"var retryCodes = [400, 422, 500, 502, 503, 504]",
+									"",
+									"if (!pm.environment.get('request_tries')) {",
+									"    pm.environment.set('request_tries', 1);",
+									"}",
+									"",
+									"ajv = new Ajv(),",
+									"    schema = {",
+									"    'type': 'object',",
+									"    'required': ['id', 'code', 'name', 'active'],",
+									"    'properties': {",
+									"        'id': { 'type' : 'number' },",
+									"        'code': { 'type' : 'string' },",
+									"        'name': {'type' : 'string'},",
+									"        'secondary_name': {'type' : 'string'}, ",
+									"        'active': { 'type': 'boolean' },",
+									"        'airport_code': { 'type': 'string' },",
+									"        'image_url': { 'type': 'string' },",
+									"        'address_id': { 'type': 'number' },",
+									"        'formatted_hours': { 'type': 'string' },",
+									"        'phone_number': { 'type': 'string' },",
+									"        'product_line': { 'type': 'string' },",
+									"        'has_ccs': { 'type': 'boolean' },",
+									"        'has_tolls': { 'type': 'boolean' },",
+									"        'toll_provider_id': { 'type': 'number' },",
+									"        'address': {",
+									"            'id': { 'type': 'number' },",
+									"            'city': { 'type': 'string' },",
+									"            'state': { 'type': 'string' },",
+									"            'zip': { 'type': 'string' },",
+									"            'created_at': { 'type': 'string' },",
+									"            'updated_at': { 'type': 'string' },",
+									"            'country': { 'type': 'string' },",
+									"            'street_number': { 'type': 'string' },",
+									"            'street_name': { 'type': 'string' },",
+									"            'line1': { 'type': 'string' },",
+									"            'default': { 'type': 'boolean' }",
+									"        },",
+									"        'tags': { 'items': { 'type': 'string'} }",
+									"    },",
+									"}",
+									"",
+									"if ((retryCodes.includes(pm.response.code)) && ",
+									"   (pm.environment.get('request_tries') < maxNumberOfTries)) {",
+									"    var tries = parseInt(pm.environment.get('request_tries'), 10);",
+									"    pm.environment.set('request_tries', tries + 1);",
+									"    setTimeout(function() {}, sleepBetweenTries);",
+									"    postman.setNextRequest(request.name);",
+									" } else {",
+									"    pm.environment.unset('request_tries');",
+									"",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test('validates schema', function() { ",
+									"        pm.expect(ajv.validate(schema, jsonData), JSON.stringify(ajv.errors)).to.be.true;",
+									"    });",
+									"    ",
+									"    pm.globals.set('location_id', jsonData.id);",
+									"    pm.test('C10194 successful response', function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Api-version",
+								"type": "text",
+								"value": "4"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"company\": {\n  \"name\": \"{{locationName}}\"\n},\n\"location\": {\n  \"name\": \"{{locationName}}\",\n   \"phone_number\":\"(999) 134-2222\",\n  \"code\": {{locationCode}},\n  \"has_ccs\": true,\n  \"has_tolls\": true,\n        \"toll_provider_id\": 2\n},\n  \"settings\":{\n  \"currency_code\": \"usd\",\n  \"insurance_form\":\"Arrowhead\",\n \"manufacturer_name\":\"Acura\"\n },\n\"address\": {\n  \"line1\": \"{{$randomStreetAddress}}\",\n  \"city\": \"{{$randomCity}}\",\n  \"state\": \"NY\",\n  \"zip\": \"10001\"\n},\n\"user\": {\n  \"email\": \"iw.qa@silvercar.com\",\n  \"user_profile_attributes\": {\n      \"first_name\": \"IW\",\n      \"last_name\": \"QA\"\n  }\n}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/salesforce?client_token={{client_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"salesforce"
+							],
+							"query": [
+								{
+									"key": "client_token",
+									"value": "{{client_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Create Employee",
+			"item": [
+				{
+					"name": "Create Employee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"C3971 Created Employee's Status code is 201\", function(){",
+									"    pm.response.to.have.status(201);",
+									"    pm.response.to.have.status(\"Created\");",
+									"})",
+									"",
+									"let responseData1= pm.response.headers.get(\"location\");",
+									"let empId1=responseData1.split(\"/\");",
+									"pm.globals.set(\"empId1\",empId1[empId1.length-1]);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let empFirstName1 = utils.get_name()",
+									"let empLastName1 = utils.get_name()",
+									"let empEmail1 = empFirstName1 + empLastName1 + '@example.com'",
+									"",
+									"pm.globals.set(\"userFirstName1\",empFirstName1);",
+									"pm.globals.set(\"userLastName1\",empLastName1);",
+									"pm.globals.set(\"userEmail1\",empEmail1)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Api-version",
+								"value": "4",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{global_authToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"{{userFirstName1}}\",\n    \"last_name\": \"{{userLastName1}}\",\n    \"email\": \"{{userEmail1}}\",\n    \"phone_number\": \"{{$randomPhoneNumber}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/dealerships/{{location_id}}/employees",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dealerships",
+								"{{location_id}}",
+								"employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create EmployeePassword",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData= pm.response.json();",
+									"pm.test(\"C3972 Created Employee's Password code is 200\", function(){",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.have.status(\"OK\");",
+									"})",
+									"",
+									"pm.test(\"validate Customer's PI First name details\", function(){",
+									"    pm.expect(responseData.user_profile.first_name).to.eql(pm.globals.get(\"userFirstName1\"));",
+									"})",
+									"",
+									"pm.test(\"validate Customer's PI Last name details\", function(){",
+									"    pm.expect(responseData.user_profile.last_name).to.eql(pm.globals.get(\"userLastName1\"));",
+									"})",
+									"",
+									"pm.test(\"validate Customer's PI email details\", function(){",
+									"    pm.expect(responseData.email).to.eql(pm.globals.get(\"userEmail1\"));",
+									"})",
+									"",
+									"pm.test(\"validate Customer's PI full name details\", function () {",
+									"    pm.expect(responseData.user_profile.full_name).to.eql(pm.globals.get(\"userFirstName1\")+\" \"+pm.globals.get(\"userLastName1\"));",
+									"})",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Api-version",
+								"value": "3",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{global_authToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"user\":{\n  \"password\": \"{{admin_password}}\",\n  \"password_confirmation\": \"{{admin_password}}\"\n}}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/locations/{{location_id}}/users/{{empId1}}/password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"locations",
+								"{{location_id}}",
+								"users",
+								"{{empId1}}",
+								"password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm EmployeePassword",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData= pm.response.json();",
+									"pm.test(\"C3973 Created Employee's Password code is 200\", function(){",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.have.status(\"OK\");",
+									"})",
+									"",
+									"pm.test(\"validate Customer's PI First name details\", function(){",
+									"    pm.expect(responseData.user_profile.first_name).to.eql(pm.globals.get(\"userFirstName1\"));",
+									"})",
+									"",
+									"pm.test(\"validate Customer's PI Last name details\", function(){",
+									"    pm.expect(responseData.user_profile.last_name).to.eql(pm.globals.get(\"userLastName1\"));",
+									"})",
+									"",
+									"pm.test(\"validate Customer's PI email details\", function(){",
+									"    pm.expect(responseData.email).to.eql(pm.globals.get(\"userEmail1\"));",
+									"})",
+									"",
+									"pm.test(\"validate Customer's PI full name details\", function () {",
+									"    pm.expect(responseData.user_profile.full_name).to.eql(pm.globals.get(\"userFirstName1\")+\" \"+pm.globals.get(\"userLastName1\"));",
+									"})",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Api-version",
+								"value": "3",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{global_authToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id\":\"{{empId1}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/locations/{{location_id}}/users/{{empId1}}//confirm",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"locations",
+								"{{location_id}}",
+								"users",
+								"{{empId1}}",
+								"",
+								"confirm"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Default Employee Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData= pm.response.json();",
+									"",
+									"pm.test(\"C3974 validate Employee default role list\", function(){",
+									"    pm.expect(responseData).to.eql([]);",
+									"})",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-version",
+								"value": "3",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{global_authToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/locations/{{location_id}}/users/{{empId1}}/roles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"locations",
+								"{{location_id}}",
+								"users",
+								"{{empId1}}",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Employee Roles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"C3975 Created Employee role code is 204\", function(){",
+									"    pm.response.to.have.status(204);",
+									"    pm.response.to.have.status(\"No Content\");",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Api-version",
+								"value": "4",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{global_authToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"id\": 1,\n        \"name\": \"employee\"\n    },\n    {\n        \"id\": 2,\n        \"name\": \"admin\"\n    },\n    {\n        \"id\": 5,\n        \"name\": \"user_manager\"\n    },\n    {\n        \"id\": 9,\n        \"name\": \"dnr_manager\"\n    },\n    {\n        \"id\": 11,\n        \"name\": \"car_manager\"\n    },\n    {\n        \"id\": 14,\n        \"name\": \"user_role_manager\"\n    },\n    {\n        \"id\": 16,\n        \"name\": \"accounting\"\n    },\n    {\n        \"id\": 31,\n        \"name\": \"service_advisor\"\n    },\n    {\n        \"id\": 35,\n        \"name\": \"view_reports\"\n    },\n    {\n        \"id\": 36,\n        \"name\": \"dispose_vehicles\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/dealerships/{{location_id}}/employees/{{empId1}}/roles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dealerships",
+								"{{location_id}}",
+								"employees",
+								"{{empId1}}",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service Advisors List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseData= pm.response.json();",
+									"",
+									"pm.test(\"C3976 Validate Service Advisor List\", function(){",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.have.status(\"OK\");",
+									"})",
+									"",
+									"pm.globals.set(\"serviceAdvisorId\",responseData[0].id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-version",
+								"value": "4",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{global_authToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/dealerships/{{location_id}}/service_advisors",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dealerships",
+								"{{location_id}}",
+								"service_advisors"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "ModifyContractFlow",
+			"item": [
+				{
+					"name": "Settings and Courtesy",
+					"item": [
+						{
+							"name": "Post New Vehicle Group",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('C10213 successful response', function () {",
+											"    pm.response.to.have.status(201);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let vehicleGroupName = \"AutomationVG\"+Math.floor(Math.random() *100000000000000000+1);;",
+											"",
+											"pm.globals.set(\"vehicleGroup\",vehicleGroupName)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"type": "text",
+										"value": "4"
+									},
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{global_authToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"{{vehicleGroup}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/dealerships/{{location_id}}/fleets",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"dealerships",
+										"{{location_id}}",
+										"fleets"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get new fleet ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData = pm.response.json();",
+											"var fleet_object = responseData.find(m => m.name === \"Courtesy\");",
+											"console.log(fleet_object.id)",
+											"pm.globals.set(\"vehicleFleetId\",fleet_object.id);",
+											"",
+											"var fleet_object = responseData.find(m => m.name === pm.globals.get('vehicleGroup'));",
+											"pm.globals.set(\"secondaryFleetId\",fleet_object.id);",
+											"",
+											"pm.test(\"C3977 Created contract's Status code is 201\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"    ",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/dealerships/{{location_id}}/fleets",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"dealerships",
+										"{{location_id}}",
+										"fleets"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SetccToggle and FuelAllowance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C3978 Check  Updated Settings Status code\", function () {",
+											"    pm.response.to.have.status(204);",
+											"    pm.response.to.have.status(\"No Content\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let chargeCustomerFlag= true;",
+											"pm.globals.set(\"chargeCustomerFlag\",chargeCustomerFlag);",
+											"let fuelAllowance= Math.round(Math.random() * 10 )+0.27;",
+											"pm.globals.set(\"fuelAllowanceValue\",fuelAllowance);",
+											"let odometerAllowance=Math.round(Math.random()*10)+0.34;",
+											"pm.globals.set(\"odometerAllowance\",odometerAllowance);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"charge_customer\": {{chargeCustomerFlag}},\n    \"fuel_allowance\": \"{{fuelAllowanceValue}}\",\"odometer_allowance\":{\"unit\":\"km\",\"value\":{{odometerAllowance}}\n    }\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/billing/settings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"billing",
+										"settings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get and verify new fleet settings",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData=pm.response.json();",
+											"pm.test(\"C3979 Get New Fleet status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"",
+											"pm.test(\"Get New Fleet charge customer toggle status\", function(){",
+											"    pm.expect(responseData.charge_customer).to.eql(true);",
+											"})",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/billing/settings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"billing",
+										"settings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "set Minimum Driver Age and View Vehicle Postion Toggle",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C3980 PUT Settings status code is 204\", function(){",
+											"    pm.response.to.have.status(204);",
+											"})",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let driverAge = ((Math.floor(Math.random() * (99-21))))+21;",
+											"pm.globals.set('driverAge',driverAge)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"minimum_age\":{{driverAge}},\"view_vehicles_under_contract\":true}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/settings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"settings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Minimum Driver Age and View Vehicle Postion Toggle",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C3981 GET Settings status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"",
+											"let responseData = pm.response.json();",
+											"pm.test(\"C3981 Validate minimum driver age and view vehicle position toggle status\", function(){",
+											"    pm.expect(responseData.minimum_age).to.eql((pm.globals.get('driverAge')));",
+											"    pm.expect(responseData.view_vehicles_under_contract).to.eql(true);",
+											"})",
+											"",
+											"pm.globals.set(\"driverMinimumAge\",responseData.minimum_age);",
+											"pm.globals.set(\"viewVehiclePostion\",responseData.view_vehicles_under_contract);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"minimum_age\":{{driverAge}},\"view_vehicles_under_contract\":true}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/settings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"settings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Set Dailyrate and DailyRate Tax",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C3982 Get New Daily Rate Fleet status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"     pm.response.to.have.status('Created');",
+											"})",
+											"",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let dailyRate= Math.round(Math.random() * 30 )+0.27;",
+											"let dailyRateTax = true",
+											"pm.globals.set(\"dailyRateValue\",dailyRate);",
+											"pm.globals.set(\"dailyRateTax\", dailyRateTax);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"value\": {{dailyRateValue}},\n  \"taxable\": {{dailyRateTax}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/billing/daily_rates",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"billing",
+										"daily_rates"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Set FuelRate  and FuelRate Tax",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C3983 Get New Fuel Charge Rate Fleet status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"     pm.response.to.have.status('Created');",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let fuelCharges= Math.round(Math.random() * 30 )+0.27;",
+											"let fuelRateTax= true",
+											"pm.globals.set(\"fuelChargesValue\",fuelCharges);",
+											"pm.globals.set(\"fuelRateTax\",fuelRateTax);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"value\": {{fuelChargesValue}},\n  \"taxable\": {{fuelRateTax}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/billing/fuel_charges",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"billing",
+										"fuel_charges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Set salesTaxValue",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C3984 Get New Sales Tax Rates Fleet status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"     pm.response.to.have.status('Created');",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let salesTaxRates= Math.round(Math.random() * 10 )+0.673;",
+											"pm.globals.set(\"salesTaxValue\",salesTaxRates);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"value\": {{salesTaxValue}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/billing/sales_tax_rates",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"billing",
+										"sales_tax_rates"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Set fuelServiceValue and fuelService Tax",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C3985 Get New Fuel Service Rate Fleet status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"     pm.response.to.have.status('Created');",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let fuelServiceCharge= Math.round(Math.random() * 10 )+0.63;",
+											"let fuelServiceTax=true;",
+											"pm.globals.set(\"fuelServiceValue\",fuelServiceCharge);",
+											"pm.globals.set(\"fuelServiceTax\",fuelServiceTax);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"value\": {{fuelServiceValue}},\n  \"taxable\": {{fuelServiceTax}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/billing/fuel_service_charges",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"billing",
+										"fuel_service_charges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get and Verify Daily Rates",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData=pm.response.json();",
+											"pm.test(\"C3986 Get New Fleet status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status('OK');",
+											"})",
+											"",
+											"pm.test(\"Get New Fleet status daily_rate value\", function(){",
+											"    pm.expect(responseData.value).to.eql((pm.globals.get('dailyRateValue')).toString());",
+											"    pm.expect(responseData.taxable).to.eql(pm.globals.get('dailyRateTax'));",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/billing/daily_rate",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"billing",
+										"daily_rate"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get and Verify Fuel Charges",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData=pm.response.json();",
+											"pm.test(\"C3987 Get New Fleet status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status('OK');",
+											"})",
+											"",
+											"pm.test(\"Get New Fleet status fuel charge value\", function(){",
+											"    pm.expect(responseData.value).to.eql((pm.globals.get('fuelChargesValue')).toString());",
+											"    pm.expect(responseData.taxable).to.eql(pm.globals.get('fuelRateTax'));",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/billing/fuel_charge",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"billing",
+										"fuel_charge"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get and Verify SalesTaxes Charges",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData=pm.response.json();",
+											"pm.test(\"C3988 Get New Fleet status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status('OK');",
+											"})",
+											"",
+											"pm.test(\"Get New Fleet status fuel charge value\", function(){",
+											"    pm.expect(responseData.value).to.eql((pm.globals.get('salesTaxValue')).toString());",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/billing/sales_tax_rate",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"billing",
+										"sales_tax_rate"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get and Verify Fuel Service Charges",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData=pm.response.json();",
+											"pm.test(\"C3989 Get New Fleet status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status('OK');",
+											"})",
+											"",
+											"pm.test(\"Get New Fleet status fuel charge value\", function(){",
+											"    pm.expect(responseData.value).to.eql((pm.globals.get('fuelServiceValue')).toString());",
+											"    pm.expect(responseData.taxable).to.eql(pm.globals.get('fuelServiceTax'));",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/billing/fuel_service_charge",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"billing",
+										"fuel_service_charge"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Create customer",
+					"item": [
+						{
+							"name": "Create CustomerPI",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.headers.get(\"location\");",
+											"",
+											"pm.test(\"C3990 Created Customer's Status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.have.status(\"Created\");",
+											"})",
+											"",
+											"let customerId= responseData.split(\"/\")",
+											"pm.globals.set(\"customerId1\",customerId[customerId.length-1]);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let customerFirstName = utils.get_name()",
+											"let customerLastName = utils.get_name()",
+											"let customerEmail = customerFirstName + customerLastName + '@example.com'",
+											"",
+											"pm.globals.set(\"customerFirstName1\",customerFirstName);",
+											"pm.globals.set(\"customerLastName1\",customerLastName);",
+											"pm.globals.set(\"customerEmail1\",customerEmail)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"first_name\": \"{{customerFirstName1}}\",\n    \"last_name\": \"{{customerLastName1}}\",\n    \"phone_number\": \"9992905927\",\n    \"email\": \"{{customerEmail1}}\",\n    \"language\": \"en\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/dealerships/{{location_id}}/customers",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"dealerships",
+										"{{location_id}}",
+										"customers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get CustomerUsingID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"",
+											"pm.test(\"C3991 validate Customer's PI details\", function(){",
+											"    pm.expect(responseData.first_name).to.eql(pm.globals.get(\"customerFirstName1\"));",
+											"    pm.expect(responseData.last_name).to.eql(pm.globals.get(\"customerLastName1\"));",
+											"    pm.expect(responseData.email).to.eql(pm.globals.get(\"customerEmail1\"));",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/customers/{{customerId1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"customers",
+										"{{customerId1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create CustomerDL",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C3992 Customer's DL Status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.have.status(\"Created\");",
+											"})",
+											"",
+											"pm.test(\"validate Customer's DL No.\", function(){",
+											"    pm.expect(responseData.number).to.eql(pm.globals.get(\"customer1DL\"));",
+											"})",
+											"",
+											"pm.test(\"validate Customer's DL dob details\", function(){",
+											"    pm.expect(responseData.date_of_birth).to.eql(pm.globals.get(\"customerDLDob1\"));",
+											"})",
+											"",
+											"pm.test(\"validate Customer's DL exp date details\", function(){",
+											"    pm.expect(responseData.expiration).to.eql(pm.globals.get(\"dlExpDate\"));",
+											"})",
+											"",
+											"pm.test(\"validate Customer's DL full name details\", function(){",
+											"    pm.expect(responseData.name).to.eql(pm.globals.get(\"customerFirstName1\")+\" \"+pm.globals.get(\"customerLastName1\"));",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let dl=\"DL\"+pm.variables.replaceIn('{{$timestamp}}')",
+											"let ageCal = pm.globals.get(\"driverMinimumAge\")+1;",
+											"console.log(ageCal);",
+											"",
+											"function formateDate(numberOfDays){",
+											"    var DateHelper = {",
+											"        addDays : function(aDate, numberOfDays) {",
+											"            aDate.setDate(aDate.getDate() + numberOfDays); ",
+											"            return aDate;                                  ",
+											"        },",
+											"        format : function format(date) {",
+											"            return [",
+											"                date.getFullYear(),",
+											"                (\"0\" + (date.getMonth()+1)).slice(-2),      ",
+											"                (\"0\" + date.getDate()).slice(-2)                       ",
+											"            ].join('-');",
+											"        }",
+											"    }",
+											"    return DateHelper.format(DateHelper.addDays(new Date(), numberOfDays));",
+											"    }",
+											"",
+											"let driverDateOfBirth = formateDate(-(ageCal*365))",
+											"pm.globals.set(\"customer1DL\",dl);",
+											"pm.globals.set(\"customerDLDob1\",driverDateOfBirth);",
+											"",
+											"let dlExpDate = formateDate((ageCal*365)+1)",
+											"pm.globals.set(\"dlExpDate\",dlExpDate);",
+											"pm.globals.set(\"custDl1\",dl);",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"number\": \"{{customer1DL}}\",\n    \"state\": \"TX\",\n    \"country\": \"US\",\n    \"date_of_birth\": \"{{customerDLDob1}}\",\n    \"expiration\": \"{{dlExpDate}}\",\n    \"name\": \"{{customerFirstName1}} {{customerLastName1}}\",\n    \"line1\": \"address 1\",\n    \"line2\": \"address 2\",\n    \"city\": \"Austin\",\n    \"zip\": \"83209\",\n    \"verified\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/customers/{{customerId1}}/drivers_license",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"customers",
+										"{{customerId1}}",
+										"drivers_license"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get CustomerDL",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"",
+											"pm.test(\"C3993 validate Customer's DL details\", function(){",
+											"    pm.expect(responseData.number).to.eql(pm.globals.get(\"customer1DL\"));",
+											"    pm.expect(responseData.date_of_birth).to.eql(pm.globals.get(\"customerDLDob1\"));",
+											"    pm.expect(responseData.expiration).to.eql(pm.globals.get(\"dlExpDate\"));",
+											"    pm.expect(responseData.name).to.eql(pm.globals.get(\"customerFirstName1\")+\" \"+pm.globals.get(\"customerLastName1\"));",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/customers/{{customerId1}}/drivers_license",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"customers",
+										"{{customerId1}}",
+										"drivers_license"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Customer creditcard",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData = pm.response.json();",
+											"pm.test(\"C3994 Customer's DL Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"    pm.expect(responseData.cardholder_name).to.eql(pm.globals.get(\"customerFirstName1\")+\" \"+pm.globals.get(\"customerLastName1\"));",
+											"})",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"nonce\":\"fake-valid-nonce\",\n  \"Postalcode\":\"78701\",\n  \"cardholder_name\": \"{{customerFirstName1}} {{customerLastName1}}\",\n  \"verified\":\"true\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/customers/{{customerId1}}/credit_card",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"customers",
+										"{{customerId1}}",
+										"credit_card"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET Customercreditcard",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C3995 Customer's DL Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/customers/{{customerId1}}/credit_card",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"customers",
+										"{{customerId1}}",
+										"credit_card"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Post CustomerInsurances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C3996 Customer's DL Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Insurnace first name\", function(){",
+											"    pm.expect(responseData.first_name).to.eql(pm.globals.get(\"customerFirstName1\"));",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Insurnace last name\", function(){",
+											"    pm.expect(responseData.last_name).to.eql(pm.globals.get(\"customerLastName1\"));",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Insurnace email\", function(){",
+											"    pm.expect(responseData.email).to.eql(pm.globals.get(\"customerEmail1\"));",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Insurnace full name\", function(){",
+											"    pm.expect(responseData.full_name).to.eql(pm.globals.get(\"customerFirstName1\")+\" \"+pm.globals.get(\"customerLastName1\"));",
+											"})",
+											"",
+											"pm.globals.set(\"insurance_id1\",responseData.id)",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let randomNo=\"POLICY\"+pm.variables.replaceIn('{{$timestamp}}');",
+											"pm.globals.set(\"custPolicy1\",randomNo);",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"customer\": {\n    \"id\": {{customerId1}},\n    \"insurance_preferences_attributes\": [\n      {\n        \"carrier\": \"Fake Insurance\",\n        \"is_silvercar\": false,\n        \"is_personal\": true,\n        \"is_corporate\": false,\n        \"policy_number\": \"{{custPolicy1}}\",\n        \"expires_on\": \"{{dlExpDate}}\",\n        \"customer_id\":{{customerId1}},\n        \"image\": null\n      }\n    ]\n  }\n}\n"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/customers/{{customerId1}}/insurances?id={{customerId1}}&location_id={{location_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"customers",
+										"{{customerId1}}",
+										"insurances"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{customerId1}}"
+										},
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get CustomerInsurances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C3997 Customer's DL Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Insurnace first name\", function(){",
+											"    pm.expect(responseData.policy_number).to.eql(pm.globals.get(\"custPolicy1\"));",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Insurnace last name\", function(){",
+											"    pm.expect(responseData.expires_on).to.eql(pm.globals.get(\"dlExpDate\"));",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"customer\": {\n    \"id\": {{customerId1}},\n    \"insurance_preferences_attributes\": [\n      {\n        \"carrier\": \"Fake Insurance\",\n        \"is_silvercar\": false,\n        \"is_personal\": true,\n        \"is_corporate\": false,\n        \"policy_number\": \"{{custPolicy1}}\",\n        \"expires_on\": \"{{dlExpDate}}\"\n      }\n    ]\n  }\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/customers/{{customerId1}}/insurances/default",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"customers",
+										"{{customerId1}}",
+										"insurances",
+										"default"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Post Customer Notes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C3998 Customer's Notes Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Notes title\", function(){",
+											"    pm.expect(responseData.title).to.eql(\"Validate Notes Title\");",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Notes content\", function(){",
+											"    pm.expect(responseData.content).to.eql(\"Validate Notes Content\");",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"title\":\"Validate Notes Title\",\"content\":\"Validate Notes Content\"}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/customers/{{customerId1}}/notes?location_id={{location_id}}&model_id={{customerId1}}&type=customers",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"customers",
+										"{{customerId1}}",
+										"notes"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "model_id",
+											"value": "{{customerId1}}"
+										},
+										{
+											"key": "type",
+											"value": "customers"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Customer Notes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C3999 Customer's Notes Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Notes title\", function(){",
+											"    pm.expect(responseData[0].title).to.eql(\"Validate Notes Title\");",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Notes content\", function(){",
+											"    pm.expect(responseData[0].content).to.eql(\"Validate Notes Content\");",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/customers/{{customerId1}}/notes?location_id={{location_id}}&model_id={{customerId1}}&type=customers",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"customers",
+										"{{customerId1}}",
+										"notes"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "model_id",
+											"value": "{{customerId1}}"
+										},
+										{
+											"key": "type",
+											"value": "customers"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Create vehicle in courtesy vehicle group",
+					"item": [
+						{
+							"name": "VehicleVin",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.environment.unset('vinNo')",
+											"var maxNumberOfTries = 3;",
+											"var responseVIN = pm.response.text().trim()",
+											"console.log(responseVIN)",
+											"if (!pm.environment.get('request_tries')) {",
+											"    pm.environment.set('request_tries', 1);",
+											"}",
+											"if ((responseVIN == '') && (pm.environment.get('request_tries') < maxNumberOfTries)) {",
+											"     var tries = parseInt(pm.environment.get('request_tries'), 10);",
+											"     pm.environment.set('request_tries', tries + 1);",
+											"     postman.setNextRequest(request.name);",
+											" } else {",
+											"    pm.environment.unset('request_tries');",
+											"    pm.test('C4000 successful response', function () {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"    pm.globals.set('vinNo', responseVIN);",
+											" }"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://randomvin.com/getvin.php?type=fake",
+									"protocol": "https",
+									"host": [
+										"randomvin",
+										"com"
+									],
+									"path": [
+										"getvin.php"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "fake"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Cars",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var maxNumberOfTries = 5;",
+											"var sleepBetweenTries = 2000;",
+											"var retryCodes = [400, 422, 500, 502, 503, 504]",
+											"",
+											"if (!pm.environment.get('request_tries_1')) {",
+											"    pm.environment.set('request_tries_1', 1);",
+											"}",
+											"",
+											"if ((retryCodes.includes(pm.response.code)) && ",
+											"   (pm.environment.get('request_tries_1') < maxNumberOfTries)) {",
+											"    var tries = parseInt(pm.environment.get('request_tries_1'), 10);",
+											"    pm.environment.set('request_tries_1', tries + 1);",
+											"    setTimeout(function() {}, sleepBetweenTries);",
+											"    postman.setNextRequest(\"VehicleVin\");",
+											" } else {",
+											"    pm.environment.unset('request_tries_1');",
+											"",
+											"    pm.test(\"C4001 Created Vehicle's Status code is 201\", function(){",
+											"        pm.response.to.have.status(201);",
+											"        pm.response.to.have.status(\"Created\");",
+											"    })",
+											"    let location = pm.response.headers.get(\"location\");",
+											"    let url_components = location.split(\"/\");",
+											"    console.log(url_components[url_components.length-1])",
+											"    pm.globals.set(\"car1Id\",url_components[url_components.length-1]);",
+											"}",
+											"",
+											" "
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"function generate(n) {",
+											"        var add = 1, max = 12 - add; ",
+											"        if ( n > max ) {",
+											"                return generate(max) + generate(n - max);",
+											"        }",
+											"        max        = Math.pow(10, n+add);",
+											"        var min    = max/10;",
+											"        var number = Math.floor( Math.random() * (max - min + 1) ) + min;",
+											"        return (\"\" + number).substring(add); ",
+											"}",
+											"",
+											"const moment = require('moment');",
+											"let licensenumber=\"License\"+generate(8);",
+											"let tollTagNumber=\"ALF\"+generate(7)+\"A\";",
+											"let stockNumber=\"stock\"+generate(4);",
+											"pm.globals.set(\"licenseNumber\",licensenumber);",
+											"pm.globals.set(\"tollTagNumber\",tollTagNumber);",
+											"pm.globals.set(\"stockNumber\",stockNumber);",
+											"pm.globals.set('availableDate', moment().format('YYYY-MM-DD'));",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"available_on\": \"{{availableDate}}\",\n    \"license\": \"{{licenseNumber}}\",\n    \"license_subregion\": \"AL\",\n    \"stock_number\": \"{{stockNumber}}\",\n    \"vin\": \"{{vinNo}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/vehicles",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"vehicles"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "VehicleVin Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.environment.unset('vinNo')",
+											"var maxNumberOfTries = 3;",
+											"var responseVIN = pm.response.text().trim()",
+											"console.log(responseVIN)",
+											"if (!pm.environment.get('request_tries')) {",
+											"    pm.environment.set('request_tries', 1);",
+											"}",
+											"if ((responseVIN == '') && (pm.environment.get('request_tries') < maxNumberOfTries)) {",
+											"     var tries = parseInt(pm.environment.get('request_tries'), 10);",
+											"     pm.environment.set('request_tries', tries + 1);",
+											"     postman.setNextRequest(request.name);",
+											" } else {",
+											"    pm.environment.unset('request_tries');",
+											"    pm.test('C4000 successful response', function () {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"    pm.globals.set('vinNo', responseVIN);",
+											" }"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://randomvin.com/getvin.php?type=fake",
+									"protocol": "https",
+									"host": [
+										"randomvin",
+										"com"
+									],
+									"path": [
+										"getvin.php"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "fake"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Cars Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var maxNumberOfTries = 5;",
+											"var sleepBetweenTries = 2000;",
+											"var retryCodes = [400, 422, 500, 502, 503, 504]",
+											"",
+											"if (!pm.environment.get('request_tries_2')) {",
+											"    pm.environment.set('request_tries_2', 1);",
+											"}",
+											"",
+											"if ((retryCodes.includes(pm.response.code)) && ",
+											"   (pm.environment.get('request_tries_2') < maxNumberOfTries)) {",
+											"    var tries = parseInt(pm.environment.get('request_tries_2'), 10);",
+											"    pm.environment.set('request_tries_2', tries + 1);",
+											"    setTimeout(function() {}, sleepBetweenTries);",
+											"    postman.setNextRequest(\"VehicleVin\");",
+											" } else {",
+											"    pm.environment.unset('request_tries_2');",
+											"",
+											"    pm.test(\"C4001 Created Vehicle's Status code is 201\", function(){",
+											"        pm.response.to.have.status(201);",
+											"        pm.response.to.have.status(\"Created\");",
+											"    })",
+											"    let location = pm.response.headers.get(\"location\");",
+											"    let url_components = location.split(\"/\");",
+											"    console.log(url_components[url_components.length-1])",
+											"    pm.globals.set(\"car2Id\",url_components[url_components.length-1]);",
+											"}",
+											"",
+											" "
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"function generate(n) {",
+											"        var add = 1, max = 12 - add; ",
+											"        if ( n > max ) {",
+											"                return generate(max) + generate(n - max);",
+											"        }",
+											"        max        = Math.pow(10, n+add);",
+											"        var min    = max/10;",
+											"        var number = Math.floor( Math.random() * (max - min + 1) ) + min;",
+											"        return (\"\" + number).substring(add); ",
+											"}",
+											"",
+											"const moment = require('moment');",
+											"let licensenumber=\"License\"+generate(8);",
+											"let tollTagNumber=\"ALF\"+generate(7)+\"A\";",
+											"let stockNumber=\"stock\"+generate(4);",
+											"pm.globals.set(\"licenseNumber\",licensenumber);",
+											"pm.globals.set(\"tollTagNumber\",tollTagNumber);",
+											"pm.globals.set(\"stockNumber\",stockNumber);",
+											"pm.globals.set('availableDate', moment().format('YYYY-MM-DD'));",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"available_on\": \"{{availableDate}}\",\n    \"license\": \"{{licenseNumber}}\",\n    \"license_subregion\": \"AL\",\n    \"stock_number\": \"{{stockNumber}}\",\n    \"vin\": \"{{vinNo}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{secondaryFleetId}}/vehicles",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{secondaryFleetId}}",
+										"vehicles"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Cars",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"",
+											"pm.test(\"C4002 Created Vehicle's Status code is 201\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"console.log(responseData.fuel.capacity)",
+											"pm.globals.set('fullFuelCapacity',responseData.fuel.capacity)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"function generate(n) {",
+											"        var add = 1, max = 12 - add; ",
+											"        if ( n > max ) {",
+											"                return generate(max) + generate(n - max);",
+											"        }",
+											"        max        = Math.pow(10, n+add);",
+											"        var min    = max/10;",
+											"        var number = Math.floor( Math.random() * (max - min + 1) ) + min;",
+											"        return (\"\" + number).substring(add); ",
+											"}",
+											"",
+											"const moment = require('moment');",
+											"let licensenumber=\"License\"+generate(8);",
+											"let tollTagNumber=\"ALF\"+generate(7)+\"A\";",
+											"let stockNumber=\"stock\"+generate(4);",
+											"pm.globals.set(\"licenseNumber\",licensenumber);",
+											"pm.globals.set(\"tollTagNumber\",tollTagNumber);",
+											"pm.globals.set(\"stockNumber\",stockNumber);",
+											"pm.globals.set('availableDate', moment().format('YYYY-MM-DD'));",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"available_on\": \"{{availableDate}}\",\n    \"license\": \"{{licenseNumber}}\",\n    \"license_subregion\": \"AL\",\n    \"stock_number\": \"{{stockNumber}}\",\n    \"vin\": \"{{vinNo}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/admin//vehicles/{{car1Id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"",
+										"vehicles",
+										"{{car1Id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Post Vehicle Notes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4003 Cars's Notes Status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.have.status(\"Created\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Notes title\", function(){",
+											"    pm.expect(responseData.title).to.eql(\"Validate Notes Title\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Notes content\", function(){",
+											"    pm.expect(responseData.content).to.eql(\"Validate Notes Content\");",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"title\":\"Validate Notes Title\",\"content\":\"Validate Notes Content\"}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/cars/{{car1Id}}/notes?location_id={{location_id}}&model_id={{car1Id}}&type=cars",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"cars",
+										"{{car1Id}}",
+										"notes"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "model_id",
+											"value": "{{car1Id}}"
+										},
+										{
+											"key": "type",
+											"value": "cars"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Vehicle Notes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4004 Cars's Notes Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Notes title\", function(){",
+											"    pm.expect(responseData[0].title).to.eql(\"Validate Notes Title\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Notes content\", function(){",
+											"    pm.expect(responseData[0].content).to.eql(\"Validate Notes Content\");",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/cars/{{car1Id}}/notes?location_id={{location_id}}&model_id={{car1Id}}&type=cars",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"cars",
+										"{{car1Id}}",
+										"notes"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "model_id",
+											"value": "{{car1Id}}"
+										},
+										{
+											"key": "type",
+											"value": "cars"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Post Vehicle Issues",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4005 Cars's Notes Status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.have.status(\"Created\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues Discription\", function(){",
+											"    pm.expect(responseData.description).to.eql(\"Test Issues\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues State\", function(){",
+											"    pm.expect(responseData.current_state).to.eql(\"opened\");",
+											"})",
+											"",
+											"pm.globals.set(\"vehicleIssueId\",responseData.id)",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"description\":\"Test Issues\"}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/cars/{{car1Id}}/issues?location_id={{location_id}}&model_id={{car1Id}}&type=cars",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"cars",
+										"{{car1Id}}",
+										"issues"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "model_id",
+											"value": "{{car1Id}}"
+										},
+										{
+											"key": "type",
+											"value": "cars"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Vehicle Issues",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4006 Cars's Notes Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues Discription\", function(){",
+											"    pm.expect(responseData[0].description).to.eql(\"Test Issues\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues State\", function(){",
+											"    pm.expect(responseData[0].current_state).to.eql(\"opened\");",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"description\":\"Test Issues\"}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/cars/{{car1Id}}/issues?location_id={{location_id}}&model_id={{car1Id}}&type=cars",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"cars",
+										"{{car1Id}}",
+										"issues"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "model_id",
+											"value": "{{car1Id}}"
+										},
+										{
+											"key": "type",
+											"value": "cars"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Resolve Vehicle Issues",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4007 Cars's Notes Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues Discription\", function(){",
+											"    pm.expect(responseData.description).to.eql(\"Test Issues\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues State\", function(){",
+											"    pm.expect(responseData.current_state).to.eql(\"closed\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues Resolved Discription\", function(){",
+											"    pm.expect(responseData.closed_description).to.eql(\"Test Resolution\");",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"closed_description\": \"Test Resolution\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/cars/{{car1Id}}/issues/{{vehicleIssueId}}?location_id={{location_id}}&vehicle_id={{car1Id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"cars",
+										"{{car1Id}}",
+										"issues",
+										"{{vehicleIssueId}}"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "vehicle_id",
+											"value": "{{car1Id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "ModifyContract",
+					"item": [
+						{
+							"name": "Create contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4010 Created contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"})",
+											"",
+											"//Validate error message when vehicle is from different VG",
+											"pm.test(\"validate contract error message\", function(){",
+											"    pm.expect(responseData.message).to.eql(\"Customer's contract is not for this location\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"pm.globals.set('test_reservation_pickup', moment().add(1, 'days').toISOString());",
+											"pm.globals.set('test_reservation_dropoff', moment().add(3, 'days').toISOString());"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_id\": \"{{customerId1}}\",\n    \"dropoff_at\": \"{{test_reservation_dropoff}}\",\n    \"pickup_at\": \"{{test_reservation_pickup}}\",\n    \"repair_order\": \"77777\",\n    \"service_advisor_id\": \"{{serviceAdvisorId}}\",\n    \"service_vehicle\": \"serviceId1234\",\n    \"vehicle_id\": \"{{car2Id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/contracts",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"contracts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4010 Created contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"})",
+											"//validate error message when VIN is from different location",
+											"pm.test(\"validate contract error message\", function(){",
+											"    pm.expect(responseData.message).to.eql(\"Customer's contract is not for this location\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"pm.globals.set('test_reservation_pickup', moment().add(1, 'days').toISOString());",
+											"pm.globals.set('test_reservation_dropoff', moment().add(3, 'days').toISOString());"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_id\": \"{{customerId1}}\",\n    \"dropoff_at\": \"{{test_reservation_dropoff}}\",\n    \"pickup_at\": \"{{test_reservation_pickup}}\",\n    \"repair_order\": \"77777\",\n    \"service_advisor_id\": \"{{serviceAdvisorId}}\",\n    \"service_vehicle\": \"serviceId1234\",\n    \"vehicle_id\": \"46419\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/contracts",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"contracts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.headers.get(\"location\");",
+											"pm.test(\"C4010 Created contract's Status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"})",
+											"let contact_id1=responseData.split(\"/\");",
+											"pm.globals.set(\"contact_id1\",contact_id1[contact_id1.length-1]);",
+											"console.log(pm.globals.get('contact_id1'))",
+											"pm.globals.set(\"contactLessConfirmation_id\",responseData.confirmation_token);",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"pm.globals.set('test_reservation_pickup', moment().add(15, 'minutes').toISOString());",
+											"pm.globals.set('test_reservation_dropoff', moment().add(3, 'days').toISOString());"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_id\": \"{{customerId1}}\",\n    \"dropoff_at\": \"{{test_reservation_dropoff}}\",\n    \"pickup_at\": \"{{test_reservation_pickup}}\",\n    \"repair_order\": \"77777\",\n    \"service_advisor_id\": \"{{serviceAdvisorId}}\",\n    \"service_vehicle\": \"serviceId1234\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/contracts",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"contracts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Post Contract Notes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4011 Reservation's Notes Status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.have.status(\"Created\");",
+											"})",
+											"",
+											"pm.test(\"validate Reservation's Notes title\", function(){",
+											"    pm.expect(responseData.title).to.eql(\"Validate Notes Title\");",
+											"})",
+											"",
+											"pm.test(\"validate Reservation's Notes content\", function(){",
+											"    pm.expect(responseData.content).to.eql(\"Validate Notes Content\");",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"title\":\"Validate Notes Title\",\"content\":\"Validate Notes Content\"}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/reservations/{{contact_id1}}/notes?location_id={{location_id}}&model_id={{contact_id1}}&type=reservations",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"reservations",
+										"{{contact_id1}}",
+										"notes"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "model_id",
+											"value": "{{contact_id1}}"
+										},
+										{
+											"key": "type",
+											"value": "reservations"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Contract Notes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4012 Reservation's Notes Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Reservation's Notes title\", function(){",
+											"    pm.expect(responseData[0].title).to.eql(\"Validate Notes Title\");",
+											"})",
+											"",
+											"pm.test(\"validate Reservation's Notes content\", function(){",
+											"    pm.expect(responseData[0].content).to.eql(\"Validate Notes Content\");",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/reservations/{{contact_id1}}/notes?location_id={{location_id}}&model_id={{contact_id1}}&type=reservations",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"reservations",
+										"{{contact_id1}}",
+										"notes"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "model_id",
+											"value": "{{contact_id1}}"
+										},
+										{
+											"key": "type",
+											"value": "reservations"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4013 Created contract's Status code is 201\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"",
+											"pm.globals.set(\"contactLessConfirmation_id\",responseData.confirmation_token);",
+											"pm.globals.set(\"repair_order\",responseData.repair_order);",
+											"pm.globals.set(\"service_vehicle_id\",responseData.service_vehicle_id);",
+											"console.log(pm.globals.get('contactLessConfirmation_id'))"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_id\": \"{{customerId1}}\",\n    \"dropoff_at\": \"{{dropOff_date}} {{dropOff_time}}\",\n    \"pickup_at\": \"{{pickUp_date}} {{pickUp_time}}\",\n    \"repair_order\": \"77777\",\n    \"service_advisor_id\": \"{{serviceAdvisorId}}\",\n    \"service_vehicle\": \"serviceId1234\"\n}\n"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4015 Modify contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"});",
+											"//When pickup and dropoff are same",
+											"pm.test(\"validate Contract Notes\", function(){",
+											"    pm.expect(responseData.key).to.eql(\"contracts.pickupAfterDropoff\");",
+											"    pm.expect(responseData.message).to.eql(\"pickup must be before dropoff\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_pickup}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4015 Modify contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"});",
+											"//when pickup date is in past",
+											"pm.test(\"validate Contract Notes\", function(){",
+											"    pm.expect(responseData.key).to.eql(\"contracts.pickupInPast\");",
+											"    pm.expect(responseData.message).to.eql(\"pickup must be in the future\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"",
+											"pm.globals.set('modify_reservation_pickup', moment().add(-2, 'days').toISOString());",
+											"console.log(pm.globals.get('modify_reservation_pickup'));",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{modify_reservation_pickup}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4015 Modify contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"});",
+											"",
+											"//Assigning a vehicle from different vehicle group",
+											"pm.test(\"validate Contract Notes\", function(){",
+											"    pm.expect(responseData.key).to.eql(\"contracts.changeVehicleGroup\");",
+											"    pm.expect(responseData.message).to.eql(\"cannot assign a reservation or contract to a different vehicle group\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"pm.globals.set('test_reservation_pickup', moment().add(30,'minutes').toISOString());",
+											"pm.globals.set('test_reservation_dropoff', moment().add(2, 'days').toISOString());",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\",\n  \"vehicle_id\": \"{{car2Id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Post CustomerInsurances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4014 Customer's DL Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Insurnace first name\", function(){",
+											"    pm.expect(responseData.first_name).to.eql(pm.globals.get(\"customerFirstName1\"));",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Insurnace last name\", function(){",
+											"    pm.expect(responseData.last_name).to.eql(pm.globals.get(\"customerLastName1\"));",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Insurnace email\", function(){",
+											"    pm.expect(responseData.email).to.eql(pm.globals.get(\"customerEmail1\"));",
+											"})",
+											"",
+											"pm.test(\"validate Customer's Insurnace full name\", function(){",
+											"    pm.expect(responseData.full_name).to.eql(pm.globals.get(\"customerFirstName1\")+\" \"+pm.globals.get(\"customerLastName1\"));",
+											"})",
+											"",
+											"pm.globals.set(\"insurance_id1\",responseData.id)",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let randomNo=\"POLICY\"+pm.variables.replaceIn('{{$timestamp}}');",
+											"pm.globals.set(\"custPolicy1\",randomNo);",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"customer\": {\n    \"id\": {{customerId1}},\n    \"insurance_preferences_attributes\": [\n      {\n        \"carrier\": \"Fake Insurance\",\n        \"is_silvercar\": false,\n        \"is_personal\": true,\n        \"is_corporate\": false,\n        \"policy_number\": \"{{custPolicy1}}\",\n        \"expires_on\": \"{{dlExpDate}}\",\n        \"customer_id\":{{customerId1}},\n        \"image\": null\n      }\n    ]\n  }\n}\n"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/customers/{{customerId1}}/insurances?id={{customerId1}}&location_id={{location_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"customers",
+										"{{customerId1}}",
+										"insurances"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{customerId1}}"
+										},
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C4015 Modify contract's Status code is 204\", function(){",
+											"    pm.response.to.have.status(204);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"pm.globals.set('modify_reservation_pickup', moment().add(1, 'days').toISOString());",
+											"console.log(pm.globals.get('test_reservation_dropoff'));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{modify_reservation_pickup}}\",\n  \"repair_order\": \"2832387293\",\n  \"service_advisor_id\": \"{{serviceAdvisorId}}\",\n  \"service_vehicle_id\": \"32768273423993\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4013 Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"",
+											"pm.test(\"validate response\", function(){",
+											"    pm.expect(responseData.repair_order).not.eql(pm.globals.get(\"repair_order\"));",
+											"    pm.expect(responseData.service_vehicle_id).not.eql(pm.globals.get(\"service_vehicle_id\"));",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Contract Notes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4012 Reservation's Notes Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Reservation's Notes content\", function(){",
+											"    pm.expect(responseData[0].content).contains(\"Validate Notes Content\");",
+											"    pm.expect(responseData[1].content).contains(\"Contract values have changed\");",
+											"",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}/notes",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}",
+										"notes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Assign Vehicle to contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData = pm.response.json()",
+											"pm.test(\"Validate Error Message\", function(){",
+											"  pm.expect(responseData.message).to.eql(\"This reservation is not scheduled to begin today.\");",
+											"})",
+											"",
+											"pm.test(\"C4016 Validate Error Status code\", function(){",
+											"    pm.response.to.have.status(422);",
+											"    pm.response.to.have.status(\"Unprocessable Entity\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n \"id\": {{car1Id}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/contracts/{{contact_id1}}/vehicle",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"contracts",
+										"{{contact_id1}}",
+										"vehicle"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4015 Modify contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"})",
+											"//Assigning a reservation to a different VG",
+											"console.log(responseData.message);",
+											"pm.test(\"validate modify contract\", function(){",
+											"    pm.expect(responseData.key).to.eql(\"contracts.changeVehicleGroup\");",
+											"    pm.expect(responseData.message).to.eql(\"cannot assign a reservation or contract to a different vehicle group\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(function() {}, 3000);",
+											"const moment = require('moment');",
+											"pm.globals.set('test_reservation_pickup', moment().add(30,'minutes').toISOString());",
+											"pm.globals.set('test_reservation_dropoff', moment().add(2, 'days').toISOString());",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\",\n  \"vehicle_id\":\"{{car2Id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4015 Modify contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"});",
+											"//When pickup and dropoff are same",
+											"pm.test(\"validate Contract Notes\", function(){",
+											"    pm.expect(responseData.key).to.eql(\"contracts.pickupAfterDropoff\");",
+											"    pm.expect(responseData.message).to.eql(\"pickup must be before dropoff\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_pickup}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Reservation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C4011 Status code is 204\", function(){",
+											"    pm.response.to.have.status(204);",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/contracts/{{contact_id1}}/cancel",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"contracts",
+										"{{contact_id1}}",
+										"cancel"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4013 Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"",
+											"pm.test(\"validate Contract status\", function(){",
+											"    pm.expect(responseData.status).to.eql(\"cancelled\");",
+											"    ",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.headers.get(\"location\");",
+											"pm.test(\"C4010 Created contract's Status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"})",
+											"let contact_id1=responseData.split(\"/\");",
+											"pm.globals.set(\"contact_id1\",contact_id1[contact_id1.length-1]);",
+											"console.log(pm.globals.get('contact_id1'))",
+											"pm.globals.set(\"contactLessConfirmation_id\",responseData.confirmation_token);",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"pm.globals.set('test_reservation_pickup', moment().add(2, 'days').toISOString());",
+											"pm.globals.set('test_reservation_dropoff', moment().add(4, 'days').toISOString());"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_id\": \"{{customerId1}}\",\n    \"dropoff_at\": \"{{test_reservation_dropoff}}\",\n    \"pickup_at\": \"{{test_reservation_pickup}}\",\n    \"repair_order\": \"77777\",\n    \"service_advisor_id\": \"{{serviceAdvisorId}}\",\n    \"service_vehicle\": \"serviceId1234\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/fleets/{{vehicleFleetId}}/contracts",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"fleets",
+										"{{vehicleFleetId}}",
+										"contracts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C4015 Modify contract's Status code is 204\", function(){",
+											"    pm.response.to.have.status(204);",
+											"})",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(function() {}, 2000);",
+											"const moment = require('moment');",
+											"pm.globals.set('test_reservation_pickup', moment().add(90,'minutes').toISOString());",
+											"pm.globals.set('test_reservation_dropoff', moment().add(2, 'days').toISOString());",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\",\n  \"vehicle_id\":{{car1Id}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4015 Modify contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"})",
+											"",
+											"pm.test(\"validate modify contract\", function(){",
+											"    pm.expect(responseData.key).to.eql(\"contracts.unassignVehicle\");",
+											"    pm.expect(responseData.message).to.eql(\"cannot unassign a vehicle from a contract\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\",\n  \"vehicle_id\":\"\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Start Contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var maxNumberOfTries = 3;",
+											"var retryCodes = [400, 422, 500, 502, 503, 504]",
+											"",
+											"if (!pm.environment.get('request_tries')) {",
+											"    pm.environment.set('request_tries', 1);",
+											"}",
+											"",
+											"if ((retryCodes.includes(pm.response.code)) && ",
+											"   (pm.environment.get('request_tries') < maxNumberOfTries)) {",
+											"    var tries = parseInt(pm.environment.get('request_tries'), 10);",
+											"    pm.environment.set('request_tries', tries + 1);",
+											"    utils.sleep(10000);",
+											"    postman.setNextRequest(request.name);",
+											" } else {",
+											"    pm.environment.unset('request_tries');",
+											"",
+											"    pm.test(\"C4019 Start contract status code\", function(){",
+											"        pm.response.to.have.status(204);",
+											"        pm.response.to.have.status(\"No Content\")",
+											"    })   ",
+											"}",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var startingMileage = 200.00",
+											"var mileageUnit = \"km\"",
+											"",
+											"pm.globals.set('startingMileage', startingMileage)",
+											"pm.globals.set('mileageUnit', mileageUnit)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"bypass_signatures\": true,\n    \"fuel\": {\n        \"unit\": \"L\",\n        \"value\": {{fullFuelCapacity}}\n    },\n    \"odometer\": {\n        \"unit\": \"{{mileageUnit}}\",\n        \"value\": {{startingMileage}}\n    },\n    \"vehicle_id\": {{car1Id}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/contracts/{{contact_id1}}/start",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"contracts",
+										"{{contact_id1}}",
+										"start"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4015 Modify contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"})",
+											"//Assigning vehicle from different vehicle group",
+											"pm.test(\"validate modify contract\", function(){",
+											"    pm.expect(responseData.key).to.eql(\"contracts.badModifyStarted\");",
+											"    pm.expect(responseData.message).to.eql(\"this contract is started; you can only set dropoff to a future date\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\",\n  \"vehicle_id\":\"{{car2Id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4015 Modify contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"})",
+											"console.log(responseData.message);",
+											"pm.test(\"validate modify contract\", function(){",
+											"    pm.expect(responseData.key).to.eql(\"contracts.badModifyStarted\");",
+											"    pm.expect(responseData.message).to.eql(\"this contract is started; you can only set dropoff to a future date\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"",
+											"pm.globals.set('modify_reservation_pickup', moment().add(-2, 'days').toISOString());",
+											"console.log(pm.globals.get('modify_reservation_pickup'));",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{modify_reservation_pickup}}\",\n  \"vehicle_id\":\"{{car1Id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4013 Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"",
+											"pm.globals.set('test_reservation_pickup', responseData.scheduled_pickup_at);",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let maxNumberOfTries = 3;",
+											"let retryCodes = [400, 422, 500, 502, 503, 504]",
+											"",
+											"if (!pm.environment.get('request_tries')) {",
+											"    pm.environment.set('request_tries', 1);",
+											"}",
+											"",
+											"if ((retryCodes.includes(pm.response.code)) && ",
+											"   (pm.environment.get('request_tries') < maxNumberOfTries)) {",
+											"    var tries = parseInt(pm.environment.get('request_tries'), 10);",
+											"    pm.environment.set('request_tries', tries + 1);",
+											"    utils.sleep(10000);",
+											"    postman.setNextRequest(request.name);",
+											" } else {",
+											"    pm.environment.unset('request_tries');",
+											"",
+											"    pm.test(\"C4015 Modify contract's Status code is 204\", function(){",
+											"        pm.response.to.have.status(204);",
+											"    })  ",
+											"}",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"",
+											"pm.globals.set('modify_reservation_dropoff', moment().add(4, 'days').toISOString());",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{modify_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\",\n  \"vehicle_id\":\"{{car1Id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4013 Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"",
+											"pm.globals.set('test_reservation_dropoff', responseData.scheduled_dropoff_at);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C4015 Modify contract's Status code is 204\", function(){",
+											"    pm.response.to.have.status(204);",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"let newDate = pm.globals.get('test_reservation_dropoff').split(\"T\")[0]",
+											"let tempDate = moment(new Date(newDate)).add(-2, 'days').toISOString();",
+											"newDate = tempDate.toString().split(\"T\")[0]+\"T\"+pm.globals.get('test_reservation_dropoff').split(\"T\")[1]",
+											"pm.globals.set('modify_reservation_dropoff', newDate)",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{modify_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\",\n  \"vehicle_id\":\"{{car1Id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Finish Contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"C4020 Finish contract status code\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\")",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const moment = require('moment');",
+											"var endingMileageInKM = 400.0",
+											"pm.globals.set('endingMileageInKM',endingMileageInKM)",
+											"pm.globals.set('dropOff_date', moment().add(2, 'days').format('DD-MM-YYYY'));",
+											"pm.globals.set('dropOff_time', moment().add(2, 'days').utc().format('HH:mm:ss'));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"car_id\":\"{{car1Id}}\",\n \"fuel_level\":50,\n \"actual_dropoff_date\":\"{{dropOff_date}}\",\n \"actual_dropoff_time\":\"{{dropOff_time}}\",\n \"ending_mileage\": {{endingMileageInKM}}\n }\n\n\n"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/reservations/{{contact_id1}}/manual_finish",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"reservations",
+										"{{contact_id1}}",
+										"manual_finish"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4013 Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"",
+											"pm.globals.set('test_reservation_dropoff', responseData.scheduled_dropoff_at);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4015 Modify contract's Status code is 422\", function(){",
+											"    pm.response.to.have.status(422);",
+											"})",
+											"console.log(responseData.message);",
+											"pm.test(\"validate Contract Notes\", function(){",
+											"    pm.expect(responseData.key).to.eql(\"contracts.changeVehicleGroup\");",
+											"    pm.expect(responseData.message).to.eql(\"cannot assign a reservation or contract to a different vehicle group\");",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\",\n  \"vehicle_id\":\"{{car2Id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "V4ModifyContract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"",
+											"pm.test(\"C4015 Modify contract's Status code is 204\", function(){",
+											"    pm.response.to.have.status(204);",
+											"})",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"scheduled_dropoff_at\": \"{{test_reservation_dropoff}}\",\n  \"scheduled_pickup_at\": \"{{test_reservation_pickup}}\",\n  \"vehicle_id\":\"{{car1Id}}\",\n  \"repair_order\": \"66666\",\n  \"service_advisor_id\": null,\n  \"service_vehicle\": \"editserviceId1234\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v4/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v4",
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Contract",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4013 Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"",
+											"pm.test(\"validate RO, SVID, SA\", function(){",
+											"    pm.expect(responseData.repair_order).to.eql(\"66666\");",
+											"    pm.expect(responseData.service_vehicle_id).to.eql(\"serviceId1234\");",
+											"    pm.expect(responseData.service_advisor_name).to.eql(null);",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "4",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/contracts/{{contact_id1}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"contracts",
+										"{{contact_id1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Post Vehicle Issues",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4021 Cars's Notes Status code is 201\", function(){",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.have.status(\"Created\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues Discription\", function(){",
+											"    pm.expect(responseData.description).to.eql(\"Test Vehicle Issue\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues State\", function(){",
+											"    pm.expect(responseData.current_state).to.eql(\"opened\");",
+											"})",
+											"",
+											"pm.globals.set(\"vehicleIssueId\",responseData.id)",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"description\":\"Test Vehicle Issue\",\"vehicle_id\":{{car1Id}},\"car\":{\"license\":\"licenseNumber\"},\"reservation_id\":{{contact_id1}}}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/cars/{{car1Id}}/issues?location_id={{location_id}}&model_id={{car1Id}}&type=cars",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"cars",
+										"{{car1Id}}",
+										"issues"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "model_id",
+											"value": "{{car1Id}}"
+										},
+										{
+											"key": "type",
+											"value": "cars"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Vehicle Issues",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4022 Cars's Notes Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues Discription\", function(){",
+											"    pm.expect(responseData[1].description).to.eql(\"Test Vehicle Issue\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues State\", function(){",
+											"    pm.expect(responseData[1].current_state).to.eql(\"opened\");",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"description\":\"Test Issues\"}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/cars/{{car1Id}}/issues?location_id={{location_id}}&model_id={{car1Id}}&type=cars",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"cars",
+										"{{car1Id}}",
+										"issues"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "model_id",
+											"value": "{{car1Id}}"
+										},
+										{
+											"key": "type",
+											"value": "cars"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Resolve Vehicle Issues",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData= pm.response.json();",
+											"pm.test(\"C4023 Cars's Notes Status code is 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"    pm.response.to.have.status(\"OK\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues Discription\", function(){",
+											"    pm.expect(responseData.description).to.eql(\"Test Vehicle Issue\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues State\", function(){",
+											"    pm.expect(responseData.current_state).to.eql(\"closed\");",
+											"})",
+											"",
+											"pm.test(\"validate Cars's Issues Resolved Discription\", function(){",
+											"    pm.expect(responseData.closed_description).to.eql(\"Test Resolution\");",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Api-version",
+										"value": "3",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{global_authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"closed_description\": \"Test Resolution\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/locations/{{location_id}}/cars/{{car1Id}}/issues/{{vehicleIssueId}}?location_id={{location_id}}&vehicle_id={{car1Id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"locations",
+										"{{location_id}}",
+										"cars",
+										"{{car1Id}}",
+										"issues",
+										"{{vehicleIssueId}}"
+									],
+									"query": [
+										{
+											"key": "location_id",
+											"value": "{{location_id}}"
+										},
+										{
+											"key": "vehicle_id",
+											"value": "{{car1Id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"utils = {",
+					"    sleep: function (milliseconds) {",
+					"        console.log('Sleeping for: ' + milliseconds + 'ms')",
+					"        const date = Date.now();",
+					"        let currentDate = null;",
+					"        do {",
+					"            currentDate = Date.now();",
+					"        } while (currentDate - date < milliseconds);",
+					"    },",
+					"",
+					"    get_name: function () {",
+					"        ts = Date.now()",
+					"        const characters = 'abcdefghijklmnopqrstuvwxyz';",
+					"        const charactersLength = characters.length;",
+					"        let counter = 0;",
+					"        let alpha = ''",
+					"        while (counter < 5) {",
+					"            alpha += characters.charAt(Math.floor(Math.random() * charactersLength));",
+					"            counter += 1;",
+					"        }",
+					"        console.log(alpha+ts)",
+					"        return alpha+ts",
+					"    }",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
